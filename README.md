@@ -23,8 +23,28 @@ Structured Data
 Excel / CSV
 
 ## Current Version
+## Current Version
 
-V0.1 - Project setup and Python environment
+V0.2 - PDF extraction, structured invoice parsing, and validation
+
+## Current Workflow
+
+PDF Invoice
+↓
+PDF Text Extraction
+↓
+Structured Invoice Parsing
+↓
+Invoice Validation
+
+## V0.2 Features
+
+- Read PDF invoices using PyPDF
+- Extract invoice fields
+- Extract financial values
+- Convert monetary values to numbers
+- Validate subtotal + GST = total
+- Detect extraction errors
 
 ## Technology
 
