@@ -39,7 +39,9 @@ def validate_invoice(invoice: dict[str, Any]) -> list[str]:
     subtotal = invoice.get("subtotal")
     gst = invoice.get("gst")
     total = invoice.get("total")
+    items = invoice.get("items", [])
 
+    # Check required invoice totals.
     if subtotal is None:
         errors.append("Subtotal is missing.")
 
@@ -49,6 +51,39 @@ def validate_invoice(invoice: dict[str, Any]) -> list[str]:
     if total is None:
         errors.append("Total is missing.")
 
+    # Check each line item:
+    # quantity × unit price should equal the item amount.
+    item_amounts: list[float] = []
+
+    for index, item in enumerate(items, start=1):
+        quantity = item.get("quantity")
+        unit_price = item.get("unit_price")
+        amount = item.get("amount")
+
+        if quantity is None or unit_price is None or amount is None:
+            continue
+
+        expected_amount = round(quantity * unit_price, 2)
+
+        if round(amount, 2) != expected_amount:
+            errors.append(
+                f"Item {index} mismatch: expected {expected_amount:.2f}, "
+                f"but extracted {amount:.2f}."
+            )
+
+        item_amounts.append(amount)
+
+    # Check that the sum of line items equals the subtotal.
+    if subtotal is not None and item_amounts:
+        expected_subtotal = round(sum(item_amounts), 2)
+
+        if round(subtotal, 2) != expected_subtotal:
+            errors.append(
+                f"Subtotal mismatch: expected {expected_subtotal:.2f}, "
+                f"but extracted {subtotal:.2f}."
+            )
+
+    # Check subtotal + GST = total.
     if all(value is not None for value in (subtotal, gst, total)):
         expected_total = round(subtotal + gst, 2)
 
