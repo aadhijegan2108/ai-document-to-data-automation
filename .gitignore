@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Generated files
+output/*
+!output/.gitkeep
+
+# Input documents may contain private/customer data
+input/*
+!input/.gitkeep
