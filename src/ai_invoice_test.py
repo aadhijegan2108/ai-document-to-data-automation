@@ -3,6 +3,7 @@ from pathlib import Path
 
 from ai_extractor import extract_invoice_with_ai
 from csv_exporter import export_invoice_to_csv
+from excel_exporter import export_invoice_to_excel
 from invoice_parser import validate_invoice
 from main import extract_text_from_pdf
 
@@ -13,6 +14,7 @@ def main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     pdf_path = project_root / "input" / "Sample_Invoice_AI_Test.pdf"
     csv_path = project_root / "output" / "validated_invoice.csv"
+    excel_path = project_root / "output" / "validated_invoice.xlsx"
 
     if not pdf_path.exists():
         print(f"ERROR: PDF not found: {pdf_path}")
@@ -66,6 +68,17 @@ def main() -> None:
             print("CSV EXPORT")
             print("========================================")
             print(f"✅ CSV exported successfully: {csv_path}")
+
+            # Step 6: Export the validated invoice to Excel.
+            export_invoice_to_excel(
+                invoice_dict,
+                excel_path,
+            )
+
+            print("\n========================================")
+            print("EXCEL EXPORT")
+            print("========================================")
+            print(f"✅ Excel exported successfully: {excel_path}")
 
     except Exception as exc:
         print(f"ERROR: AI invoice extraction failed: {exc}")

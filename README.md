@@ -74,3 +74,12 @@ Learn → Build → Test → Document → GitHub → Portfolio → Customer feed
 - Includes invoice, supplier, customer, item, subtotal, GST, and total fields
 - CSV export occurs only after invoice validation passes
 - Tested successfully with Sample_Invoice_AI_Test.pdf
+
+### V0.6 - Excel Export
+
+- Export validated AI-extracted invoice data to Excel
+- Create separate Invoice Summary and Line Items worksheets
+- Preserve invoice, supplier, customer, financial, and line-item data
+- Automatically adjust column widths
+- Excel export occurs only after invoice validation passes
+- Tested successfully with Sample_Invoice_AI_Test.pdf
