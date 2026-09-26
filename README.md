@@ -83,3 +83,13 @@ Learn → Build → Test → Document → GitHub → Portfolio → Customer feed
 - Automatically adjust column widths
 - Excel export occurs only after invoice validation passes
 - Tested successfully with Sample_Invoice_AI_Test.pdf
+
+### V0.7 - Batch Invoice Processing
+
+- Automatically detect all PDF invoices in the input directory
+- Process multiple invoices in a single run
+- Apply Gemini structured extraction to each invoice
+- Validate each invoice independently
+- Export valid invoices to CSV and Excel
+- Report successful and failed invoice counts
+- Tested successfully with 3 PDF invoices
