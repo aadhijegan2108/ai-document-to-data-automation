@@ -66,4 +66,11 @@ Learn → Build → Test → Document → GitHub → Portfolio → Customer feed
 
 ## Status
 
-🚧 Under development
+🚧 Under 
+### V0.5 - CSV Export
+
+- Export validated AI-extracted invoice data to CSV
+- One row generated per invoice line item
+- Includes invoice, supplier, customer, item, subtotal, GST, and total fields
+- CSV export occurs only after invoice validation passes
+- Tested successfully with Sample_Invoice_AI_Test.pdf
