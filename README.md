@@ -93,3 +93,12 @@ Learn → Build → Test → Document → GitHub → Portfolio → Customer feed
 - Export valid invoices to CSV and Excel
 - Report successful and failed invoice counts
 - Tested successfully with 3 PDF invoices
+
+### V0.8 - Error Handling and Logging
+
+- Added centralized application logging
+- Record PDF extraction, AI extraction, validation, and export steps
+- Record validation failures and unexpected processing errors
+- Continue batch processing when an individual invoice fails
+- Store processing history in `logs/invoice_processing.log`
+- Tested with both valid and intentionally corrupted PDF input

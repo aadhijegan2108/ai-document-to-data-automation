@@ -10,3 +10,5 @@ output/*
 # Input documents may contain private/customer data
 input/*
 !input/.gitkeep
+
+logs/
