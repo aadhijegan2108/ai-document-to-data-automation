@@ -102,3 +102,13 @@ Learn → Build → Test → Document → GitHub → Portfolio → Customer feed
 - Continue batch processing when an individual invoice fails
 - Store processing history in `logs/invoice_processing.log`
 - Tested with both valid and intentionally corrupted PDF input
+
+### V0.9 - Duplicate Invoice Detection
+
+- Added invoice registry for previously processed invoices
+- Detect duplicates using supplier GSTIN and invoice number
+- Skip duplicate invoices before validation and export
+- Register invoices only after successful validation and export
+- Track duplicate invoices separately from failed invoices
+- Store the registry in `data/invoice_registry.json`
+- Tested successfully by processing the same invoice twice
