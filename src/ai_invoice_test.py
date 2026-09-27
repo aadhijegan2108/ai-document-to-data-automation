@@ -5,7 +5,7 @@ from ai_extractor import extract_invoice_with_ai
 from csv_exporter import export_invoice_to_csv
 from excel_exporter import export_invoice_to_excel
 from invoice_parser import validate_invoice
-from main import extract_text_from_pdf
+from pdf_extractor import extract_text_from_pdf
 
 
 def main() -> None:
