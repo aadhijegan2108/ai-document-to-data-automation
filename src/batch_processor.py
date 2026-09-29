@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from ai_extractor import extract_invoice_with_ai
+from batch_reporter import create_batch_summary
 from config import AppConfig, create_config
 from csv_exporter import export_invoice_to_csv
 from excel_exporter import export_invoice_to_excel
@@ -12,7 +13,7 @@ from invoice_registry import (
 from logger import setup_logger
 from pdf_extractor import extract_text_from_pdf
 from processing_result import ProcessingResult, ProcessingStatus
-from batch_reporter import create_batch_summary
+
 
 def process_invoice(
     pdf_path: Path,
@@ -99,8 +100,13 @@ def process_invoice(
         )
 
         # Step 6: Create output filenames.
-        csv_path = config.output_dir / f"{pdf_path.stem}.csv"
-        excel_path = config.output_dir / f"{pdf_path.stem}.xlsx"
+        csv_path = (
+            config.output_dir / f"{pdf_path.stem}.csv"
+        )
+
+        excel_path = (
+            config.output_dir / f"{pdf_path.stem}.xlsx"
+        )
 
         # Step 7: Export validated invoice to CSV.
         export_invoice_to_csv(
@@ -136,7 +142,9 @@ def process_invoice(
         return ProcessingResult(
             filename=pdf_path.name,
             status=ProcessingStatus.SUCCESS,
-            message="Invoice processed and exported successfully.",
+            message=(
+                "Invoice processed and exported successfully."
+            ),
         )
 
     except Exception as exc:
@@ -155,31 +163,12 @@ def process_invoice(
         )
 
 
-def main() -> None:
-    """Process all PDF invoices in the input directory."""
+def process_batch(
+    config: AppConfig,
+    logger,
+) -> list[ProcessingResult]:
+    """Process all PDF invoices in the configured input directory."""
 
-    # Load application configuration.
-    config = create_config()
-
-    # Create required directories.
-    config.output_dir.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    config.data_dir.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    # Set up application logging.
-    logger = setup_logger(config)
-
-    logger.info("=" * 60)
-    logger.info("BATCH INVOICE PROCESSING STARTED")
-    logger.info("=" * 60)
-
-    # Find all PDF files in the configured input directory.
     pdf_files = sorted(
         path
         for path in config.input_dir.iterdir()
@@ -189,14 +178,11 @@ def main() -> None:
 
     if not pdf_files:
         logger.warning(
-            f"No PDF invoices found in: {config.input_dir}"
+            f"No PDF invoices found in: "
+            f"{config.input_dir}"
         )
 
-        print(
-            f"No PDF invoices found in: {config.input_dir}"
-        )
-
-        return
+        return []
 
     logger.info(
         f"Found {len(pdf_files)} PDF invoice(s)"
@@ -213,51 +199,4 @@ def main() -> None:
 
         results.append(result)
 
-    summary = create_batch_summary(results)
-
-
-    logger.info("=" * 60)
-    logger.info("BATCH INVOICE PROCESSING COMPLETED")
-    logger.info(
-    f"Summary | Total: {summary.total} | "
-    f"Successful: {summary.successful} | "
-    f"Duplicates: {summary.duplicates} | "
-    f"Validation Failed: {summary.validation_failed} | "
-    f"Processing Errors: {summary.processing_errors}"
-)
-    logger.info("=" * 60)
-
-    print("\n" + "=" * 60)
-    print("BATCH PROCESSING COMPLETE")
-    print("=" * 60)
-    print(f"Total invoices        : {summary.total}")
-    print(f"Successful            : {summary.successful}")
-    print(f"Duplicates            : {summary.duplicates}")
-    print(f"Validation failures   : {summary.validation_failed}")
-    print(f"Processing errors     : {summary.processing_errors}")
-    print(f"Total failed          : {summary.failed}")
-    print(f"Output folder         : {config.output_dir}")
-    print(f"Registry file         : {config.registry_path}")
-    print(
-        f"Log file              : "
-        f"{config.logs_dir / 'invoice_processing.log'}"
-    )
-
-    # Display individual non-success results.
-    for result in results:
-        if result.status != ProcessingStatus.SUCCESS:
-            print(
-                f"\n{result.status.value.upper()}: "
-                f"{result.filename}"
-            )
-
-            print(
-                f"Message: {result.message}"
-            )
-
-            for error in result.errors:
-                print(f"- {error}")
-
-
-if __name__ == "__main__":
-    main()
+    return results
