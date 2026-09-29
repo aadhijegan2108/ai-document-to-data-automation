@@ -12,7 +12,7 @@ from invoice_registry import (
 from logger import setup_logger
 from pdf_extractor import extract_text_from_pdf
 from processing_result import ProcessingResult, ProcessingStatus
-
+from batch_reporter import create_batch_summary
 
 def process_invoice(
     pdf_path: Path,
@@ -213,48 +213,29 @@ def main() -> None:
 
         results.append(result)
 
-    successful = sum(
-        result.status == ProcessingStatus.SUCCESS
-        for result in results
-    )
+    summary = create_batch_summary(results)
 
-    duplicates = sum(
-        result.status == ProcessingStatus.DUPLICATE
-        for result in results
-    )
-
-    validation_failed = sum(
-        result.status == ProcessingStatus.VALIDATION_FAILED
-        for result in results
-    )
-
-    processing_errors = sum(
-        result.status == ProcessingStatus.PROCESSING_ERROR
-        for result in results
-    )
-
-    failed = validation_failed + processing_errors
 
     logger.info("=" * 60)
     logger.info("BATCH INVOICE PROCESSING COMPLETED")
     logger.info(
-        f"Summary | Total: {len(results)} | "
-        f"Successful: {successful} | "
-        f"Duplicates: {duplicates} | "
-        f"Validation Failed: {validation_failed} | "
-        f"Processing Errors: {processing_errors}"
-    )
+    f"Summary | Total: {summary.total} | "
+    f"Successful: {summary.successful} | "
+    f"Duplicates: {summary.duplicates} | "
+    f"Validation Failed: {summary.validation_failed} | "
+    f"Processing Errors: {summary.processing_errors}"
+)
     logger.info("=" * 60)
 
     print("\n" + "=" * 60)
     print("BATCH PROCESSING COMPLETE")
     print("=" * 60)
-    print(f"Total invoices        : {len(results)}")
-    print(f"Successful            : {successful}")
-    print(f"Duplicates            : {duplicates}")
-    print(f"Validation failures   : {validation_failed}")
-    print(f"Processing errors     : {processing_errors}")
-    print(f"Total failed          : {failed}")
+    print(f"Total invoices        : {summary.total}")
+    print(f"Successful            : {summary.successful}")
+    print(f"Duplicates            : {summary.duplicates}")
+    print(f"Validation failures   : {summary.validation_failed}")
+    print(f"Processing errors     : {summary.processing_errors}")
+    print(f"Total failed          : {summary.failed}")
     print(f"Output folder         : {config.output_dir}")
     print(f"Registry file         : {config.registry_path}")
     print(
