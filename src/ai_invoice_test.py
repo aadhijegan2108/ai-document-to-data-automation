@@ -6,6 +6,7 @@ from csv_exporter import export_invoice_to_csv
 from excel_exporter import export_invoice_to_excel
 from invoice_parser import validate_invoice
 from pdf_extractor import extract_text_from_pdf
+from config import create_config
 
 
 def main() -> None:
@@ -25,7 +26,10 @@ def main() -> None:
         invoice_text = extract_text_from_pdf(pdf_path)
 
         # Step 2: Send the invoice text to Gemini.
-        invoice = extract_invoice_with_ai(invoice_text)
+        invoice = extract_invoice_with_ai(
+    invoice_text,
+    config,
+)
 
         # Step 3: Convert the Pydantic object to a normal dictionary.
         invoice_dict = invoice.model_dump()

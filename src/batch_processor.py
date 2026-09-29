@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from ai_extractor import extract_invoice_with_ai
+from config import AppConfig, create_config
 from csv_exporter import export_invoice_to_csv
 from excel_exporter import export_invoice_to_excel
 from invoice_parser import validate_invoice
@@ -15,8 +16,7 @@ from processing_result import ProcessingResult, ProcessingStatus
 
 def process_invoice(
     pdf_path: Path,
-    output_dir: Path,
-    registry_path: Path,
+    config: AppConfig,
     logger,
 ) -> ProcessingResult:
     """Process one PDF invoice and return a structured result."""
@@ -25,12 +25,21 @@ def process_invoice(
 
     try:
         # Step 1: Extract text from the PDF.
-        logger.info(f"Extracting text from: {pdf_path.name}")
+        logger.info(
+            f"Extracting text from: {pdf_path.name}"
+        )
+
         invoice_text = extract_text_from_pdf(pdf_path)
 
         # Step 2: Extract structured invoice data using Gemini.
-        logger.info(f"Sending invoice to Gemini: {pdf_path.name}")
-        invoice = extract_invoice_with_ai(invoice_text)
+        logger.info(
+            f"Sending invoice to Gemini: {pdf_path.name}"
+        )
+
+        invoice = extract_invoice_with_ai(
+            invoice_text,
+            config,
+        )
 
         # Step 3: Convert the Pydantic object to a dictionary.
         invoice_dict = invoice.model_dump()
@@ -39,11 +48,12 @@ def process_invoice(
         try:
             duplicate = is_duplicate_invoice(
                 invoice_dict,
-                registry_path,
+                config.registry_path,
             )
         except ValueError as exc:
             logger.warning(
-                f"Duplicate check skipped for {pdf_path.name}: {exc}"
+                f"Duplicate check skipped for "
+                f"{pdf_path.name}: {exc}"
             )
             duplicate = False
 
@@ -61,7 +71,10 @@ def process_invoice(
             )
 
         # Step 5: Validate the extracted invoice.
-        logger.info(f"Validating invoice: {pdf_path.name}")
+        logger.info(
+            f"Validating invoice: {pdf_path.name}"
+        )
+
         errors = validate_invoice(invoice_dict)
 
         if errors:
@@ -86,8 +99,8 @@ def process_invoice(
         )
 
         # Step 6: Create output filenames.
-        csv_path = output_dir / f"{pdf_path.stem}.csv"
-        excel_path = output_dir / f"{pdf_path.stem}.xlsx"
+        csv_path = config.output_dir / f"{pdf_path.stem}.csv"
+        excel_path = config.output_dir / f"{pdf_path.stem}.xlsx"
 
         # Step 7: Export validated invoice to CSV.
         export_invoice_to_csv(
@@ -113,7 +126,7 @@ def process_invoice(
         register_invoice(
             invoice_dict,
             pdf_path.name,
-            registry_path,
+            config.registry_path,
         )
 
         logger.info(
@@ -130,7 +143,8 @@ def process_invoice(
         error_message = str(exc)
 
         logger.exception(
-            f"Processing failed: {pdf_path.name} | {error_message}"
+            f"Processing failed: "
+            f"{pdf_path.name} | {error_message}"
         )
 
         return ProcessingResult(
@@ -144,36 +158,44 @@ def process_invoice(
 def main() -> None:
     """Process all PDF invoices in the input directory."""
 
-    project_root = Path(__file__).resolve().parents[1]
+    # Load application configuration.
+    config = create_config()
 
-    input_dir = project_root / "input"
-    output_dir = project_root / "output"
-    registry_path = project_root / "data" / "invoice_registry.json"
-
-    output_dir.mkdir(
+    # Create required directories.
+    config.output_dir.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    logger = setup_logger(project_root)
+    config.data_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # Set up application logging.
+    logger = setup_logger(config)
 
     logger.info("=" * 60)
     logger.info("BATCH INVOICE PROCESSING STARTED")
     logger.info("=" * 60)
 
+    # Find all PDF files in the configured input directory.
     pdf_files = sorted(
         path
-        for path in input_dir.iterdir()
+        for path in config.input_dir.iterdir()
         if path.is_file()
         and path.suffix.lower() == ".pdf"
     )
 
     if not pdf_files:
         logger.warning(
-            f"No PDF invoices found in: {input_dir}"
+            f"No PDF invoices found in: {config.input_dir}"
         )
 
-        print(f"No PDF invoices found in: {input_dir}")
+        print(
+            f"No PDF invoices found in: {config.input_dir}"
+        )
+
         return
 
     logger.info(
@@ -185,8 +207,7 @@ def main() -> None:
     for pdf_path in pdf_files:
         result = process_invoice(
             pdf_path,
-            output_dir,
-            registry_path,
+            config,
             logger,
         )
 
@@ -234,11 +255,11 @@ def main() -> None:
     print(f"Validation failures   : {validation_failed}")
     print(f"Processing errors     : {processing_errors}")
     print(f"Total failed          : {failed}")
-    print(f"Output folder         : {output_dir}")
-    print(f"Registry file         : {registry_path}")
+    print(f"Output folder         : {config.output_dir}")
+    print(f"Registry file         : {config.registry_path}")
     print(
         f"Log file              : "
-        f"{project_root / 'logs' / 'invoice_processing.log'}"
+        f"{config.logs_dir / 'invoice_processing.log'}"
     )
 
     # Display individual non-success results.
@@ -248,7 +269,10 @@ def main() -> None:
                 f"\n{result.status.value.upper()}: "
                 f"{result.filename}"
             )
-            print(f"Message: {result.message}")
+
+            print(
+                f"Message: {result.message}"
+            )
 
             for error in result.errors:
                 print(f"- {error}")

@@ -6,7 +6,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
-
+from config import AppConfig
 # Load the API key from .env
 load_dotenv()
 
@@ -44,7 +44,10 @@ class InvoiceData(BaseModel):
     total: Optional[float] = None
 
 
-def extract_invoice_with_ai(invoice_text: str) -> InvoiceData:
+def extract_invoice_with_ai(
+    invoice_text: str,
+    config: AppConfig,
+) -> InvoiceData:
     """Send invoice text to Gemini and return structured invoice data."""
 
     api_key = os.getenv("GEMINI_API_KEY")
@@ -53,6 +56,7 @@ def extract_invoice_with_ai(invoice_text: str) -> InvoiceData:
         raise RuntimeError("GEMINI_API_KEY was not found in .env")
 
     client = genai.Client(api_key=api_key)
+    
 
     prompt = f"""
 Extract the invoice information from the text below.
@@ -73,7 +77,7 @@ Invoice text:
 """
 
     response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
+        model=config.gemini_model,
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",

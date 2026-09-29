@@ -1,14 +1,18 @@
 import logging
 from pathlib import Path
 
+from config import AppConfig
 
-def setup_logger(project_root: Path) -> logging.Logger:
+
+def setup_logger(config: AppConfig) -> logging.Logger:
     """Create and configure the application logger."""
 
-    log_dir = project_root / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
+    config.logs_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    log_file = log_dir / "invoice_processing.log"
+    log_file = config.logs_dir / "invoice_processing.log"
 
     logger = logging.getLogger("invoice_automation")
     logger.setLevel(logging.INFO)
