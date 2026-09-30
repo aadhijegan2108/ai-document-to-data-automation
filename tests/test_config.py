@@ -65,6 +65,27 @@ class TestConfig(unittest.TestCase):
             "gemini-3.5-flash-lite",
         )
 
+    def test_gemini_api_key_is_loaded(self):
+        with patch.dict(
+            os.environ,
+            {"GEMINI_API_KEY": "test-api-key"},
+            clear=False,
+        ):
+            config = create_config()
+
+        self.assertEqual(
+            config.gemini_api_key,
+            "test-api-key",
+        )
+
+    def test_log_file_name_is_configured(self):
+        config = create_config()
+
+        self.assertEqual(
+            config.log_file_name,
+            "invoice_processing.log",
+        )
+
     def test_empty_gemini_model_is_rejected(self):
         with patch.dict(
             os.environ,

@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from config import AppConfig
 
@@ -12,7 +11,7 @@ def setup_logger(config: AppConfig) -> logging.Logger:
         exist_ok=True,
     )
 
-    log_file = config.logs_dir / "invoice_processing.log"
+    log_file = config.logs_dir / config.log_file_name
 
     logger = logging.getLogger("invoice_automation")
     logger.setLevel(logging.INFO)
