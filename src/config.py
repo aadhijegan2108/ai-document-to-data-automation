@@ -9,6 +9,7 @@ load_dotenv()
 
 
 DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_LOG_FILE_NAME = "invoice_processing.log"
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,8 @@ class AppConfig:
     registry_path: Path
 
     gemini_model: str
+    gemini_api_key: str | None
+    log_file_name: str
 
 
 def create_config() -> AppConfig:
@@ -49,6 +52,8 @@ def create_config() -> AppConfig:
                 "GEMINI_MODEL cannot be empty."
             )
 
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+
     return AppConfig(
         project_root=project_root,
         input_dir=input_dir,
@@ -57,4 +62,6 @@ def create_config() -> AppConfig:
         data_dir=data_dir,
         registry_path=registry_path,
         gemini_model=gemini_model,
+        gemini_api_key=gemini_api_key,
+        log_file_name=DEFAULT_LOG_FILE_NAME,
     )
