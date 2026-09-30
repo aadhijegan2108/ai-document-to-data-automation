@@ -97,6 +97,40 @@ class TestApplication(unittest.TestCase):
             config,
         )
 
+    @patch("application.setup_logger")
+    @patch("application.process_batch")
+    def test_application_passes_config_and_logger(
+        self,
+        mock_process_batch,
+        mock_setup_logger,
+    ):
+        config = create_config()
+
+        mock_logger = mock_setup_logger.return_value
+
+        mock_process_batch.return_value = []
+
+        results, summary = run_application(config)
+
+        self.assertEqual(
+            results,
+            [],
+        )
+
+        self.assertEqual(
+            summary.total,
+            0,
+        )
+
+        mock_setup_logger.assert_called_once_with(
+            config,
+        )
+
+        mock_process_batch.assert_called_once_with(
+            config,
+            mock_logger,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
