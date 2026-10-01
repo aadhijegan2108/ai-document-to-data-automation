@@ -171,7 +171,42 @@ class TestApplication(unittest.TestCase):
             self.assertTrue(
                 config.data_dir.is_dir()
             )
+    @patch("application.create_config")
+    @patch("application.setup_logger")
+    @patch("application.process_batch")
+    def test_application_creates_default_config(
+        self,
+        mock_process_batch,
+        mock_setup_logger,
+        mock_create_config,
+    ):
+        config = create_config()
 
+        mock_create_config.return_value = config
+        mock_process_batch.return_value = []
+
+        results, summary = run_application()
+
+        self.assertEqual(
+            results,
+            [],
+        )
+
+        self.assertEqual(
+            summary.total,
+            0,
+        )
+
+        mock_create_config.assert_called_once()
+
+        mock_setup_logger.assert_called_once_with(
+            config,
+        )
+
+        mock_process_batch.assert_called_once_with(
+            config,
+            mock_setup_logger.return_value,
+        )
 
 if __name__ == "__main__":
     unittest.main()
