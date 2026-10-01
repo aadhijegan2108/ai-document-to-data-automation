@@ -1,5 +1,7 @@
 import sys
+import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -130,6 +132,45 @@ class TestApplication(unittest.TestCase):
             config,
             mock_logger,
         )
+
+    @patch("application.setup_logger")
+    @patch("application.process_batch")
+    def test_application_creates_required_directories(
+        self,
+        mock_process_batch,
+        mock_setup_logger,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+
+            config = create_config()
+
+            config = replace(
+                config,
+                project_root=project_root,
+                output_dir=project_root / "output",
+                data_dir=project_root / "data",
+            )
+
+            mock_process_batch.return_value = []
+
+            run_application(config)
+
+            self.assertTrue(
+                config.output_dir.exists()
+            )
+
+            self.assertTrue(
+                config.output_dir.is_dir()
+            )
+
+            self.assertTrue(
+                config.data_dir.exists()
+            )
+
+            self.assertTrue(
+                config.data_dir.is_dir()
+            )
 
 
 if __name__ == "__main__":
