@@ -257,6 +257,73 @@ class TestBatchProcessor(unittest.TestCase):
                 ProcessingStatus.PROCESSING_ERROR,
             )
 
+    @patch("batch_processor.process_invoice")
+    def test_passes_config_and_logger_to_each_invoice(
+        self,
+        mock_process_invoice,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_dir = Path(temp_dir)
+
+            pdf_a = input_dir / "invoice_a.pdf"
+            pdf_b = input_dir / "invoice_b.pdf"
+
+            pdf_a.write_bytes(b"test")
+            pdf_b.write_bytes(b"test")
+
+            config = create_config()
+
+            config = replace(
+                config,
+                input_dir=input_dir,
+            )
+
+            logger = MagicMock()
+
+            mock_process_invoice.side_effect = [
+                ProcessingResult(
+                    filename="invoice_a.pdf",
+                    status=ProcessingStatus.SUCCESS,
+                ),
+                ProcessingResult(
+                    filename="invoice_b.pdf",
+                    status=ProcessingStatus.SUCCESS,
+                ),
+            ]
+
+            process_batch(
+                config,
+                logger,
+            )
+
+            self.assertEqual(
+                mock_process_invoice.call_count,
+                2,
+            )
+
+            first_call = mock_process_invoice.call_args_list[0]
+            second_call = mock_process_invoice.call_args_list[1]
+
+            self.assertEqual(
+                first_call.args[1],
+                config,
+            )
+
+            self.assertEqual(
+                first_call.args[2],
+                logger,
+            )
+
+            self.assertEqual(
+                second_call.args[1],
+                config,
+            )
+
+            self.assertEqual(
+                second_call.args[2],
+                logger,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
