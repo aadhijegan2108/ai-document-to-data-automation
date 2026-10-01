@@ -1,3 +1,4 @@
+
 import sys
 import unittest
 from pathlib import Path
@@ -8,7 +9,7 @@ from unittest.mock import MagicMock, patch
 project_root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(project_root / "src"))
 
-from batch_processor import process_invoice
+from invoice_processor import process_invoice
 from config import create_config
 from processing_result import ProcessingStatus
 
@@ -40,22 +41,22 @@ class TestProcessInvoice(unittest.TestCase):
             ],
         }
 
-    @patch("batch_processor.register_invoice")
-    @patch("batch_processor.export_invoice_to_excel")
-    @patch("batch_processor.export_invoice_to_csv")
-    @patch("batch_processor.validate_invoice")
-    @patch("batch_processor.is_duplicate_invoice")
-    @patch("batch_processor.extract_invoice_with_ai")
-    @patch("batch_processor.extract_text_from_pdf")
+    @patch("invoice_processor.extract_invoice_with_ai")
+    @patch("invoice_processor.validate_invoice")
+    @patch("invoice_processor.is_duplicate_invoice")
+    @patch("invoice_processor.export_invoice_to_csv")
+    @patch("invoice_processor.export_invoice_to_excel")
+    @patch("invoice_processor.register_invoice")
+    @patch("invoice_processor.extract_text_from_pdf")
     def test_success(
         self,
         mock_extract_text,
-        mock_ai_extract,
+        mock_register,
+        mock_excel_export,
+        mock_csv_export,
         mock_duplicate_check,
         mock_validate,
-        mock_csv_export,
-        mock_excel_export,
-        mock_register,
+        mock_ai_extract,
     ):
         mock_extract_text.return_value = "invoice text"
 
@@ -91,10 +92,10 @@ class TestProcessInvoice(unittest.TestCase):
         mock_excel_export.assert_called_once()
         mock_register.assert_called_once()
 
-    @patch("batch_processor.validate_invoice")
-    @patch("batch_processor.is_duplicate_invoice")
-    @patch("batch_processor.extract_invoice_with_ai")
-    @patch("batch_processor.extract_text_from_pdf")
+    @patch("invoice_processor.validate_invoice")
+    @patch("invoice_processor.is_duplicate_invoice")
+    @patch("invoice_processor.extract_invoice_with_ai")
+    @patch("invoice_processor.extract_text_from_pdf")
     def test_duplicate(
         self,
         mock_extract_text,
@@ -128,10 +129,10 @@ class TestProcessInvoice(unittest.TestCase):
 
         mock_validate.assert_not_called()
 
-    @patch("batch_processor.is_duplicate_invoice")
-    @patch("batch_processor.extract_invoice_with_ai")
-    @patch("batch_processor.extract_text_from_pdf")
-    @patch("batch_processor.validate_invoice")
+    @patch("invoice_processor.is_duplicate_invoice")
+    @patch("invoice_processor.extract_invoice_with_ai")
+    @patch("invoice_processor.extract_text_from_pdf")
+    @patch("invoice_processor.validate_invoice")
     def test_validation_failed(
         self,
         mock_validate,
@@ -174,8 +175,8 @@ class TestProcessInvoice(unittest.TestCase):
             validation_errors,
         )
 
-    @patch("batch_processor.extract_invoice_with_ai")
-    @patch("batch_processor.extract_text_from_pdf")
+    @patch("invoice_processor.extract_invoice_with_ai")
+    @patch("invoice_processor.extract_text_from_pdf")
     def test_processing_error(
         self,
         mock_extract_text,
@@ -209,4 +210,3 @@ class TestProcessInvoice(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-    
